@@ -1,0 +1,23 @@
+{
+  "name": "collaborative-invoice-composition",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pondersource/collaborative-invoice-composition.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/pondersource/collaborative-invoice-composition/issues"
+  },
+  "homepage": "https://github.com/pondersource/collaborative-invoice-composition#readme",
+  "dependencies": {
+    "ts-node-dev": "^1.1.6",
+    "typescript": "^4.3.2"
+  }
+}
