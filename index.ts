@@ -1,1 +1,163 @@
-console.log('hello repo');
+enum OperationType {
+  AddItemQty = 'AddItemQty',
+  AddProductStock = 'AddProductStock',
+  AddProductUnitPrice = 'AddProductUnitPrice',
+  SetSellerInfo = 'SetSellerInfo',
+  SetBuyerInfo = 'SetBuyerInfo'
+}
+
+enum Actor {
+  Buyer = 'Buyer',
+  Seller = 'Seller'
+}
+
+const OperationsAllowed = {
+  [Actor.Seller]: [
+    OperationType.AddProductStock,
+    OperationType.AddProductUnitPrice,
+    OperationType.SetSellerInfo
+  ],
+  [Actor.Buyer]: [
+    OperationType.AddItemQty,
+    OperationType.SetBuyerInfo
+  ]
+}
+
+class ItemsOperation {
+  type: OperationType
+  productCode: string
+  amount: number
+}
+
+class InfoOperation {
+  type: OperationType
+  version: number
+  info: any
+}
+
+class DraftInvoice {
+  actorInfo: {
+    [actor: string]: { // actually, [actor: Actor]
+      info: any
+      version: number
+    }
+  }
+  invoiceId: string
+  items: {
+   [productCode: string]: {
+      ask: number
+      stock: number
+      unitPrice: number
+    }
+  }
+
+  constructor(invoiceId: string, sellerInfo: any, buyerInfo: any) {
+    this.invoiceId = invoiceId;
+    this.actorInfo = {
+      [Actor.Seller]: { info: sellerInfo, version: 0 },
+      [Actor.Buyer]: { info: buyerInfo, version: 0 }
+    }
+    this.items = {};
+    console.log(`Draft invoice ${invoiceId} created, seller and buyer:`, sellerInfo, buyerInfo);
+  }
+
+  isInfoOperation(op: ItemsOperation | InfoOperation): boolean {
+    // FIXME: why doesn't this work:
+    // return op instanceof ItemsOperation;
+    return ([OperationType.SetBuyerInfo, OperationType.SetSellerInfo].indexOf(op.type) !== -1);
+  }
+  
+  applyOperation (op: ItemsOperation | InfoOperation): void {
+    if (this.isInfoOperation(op)) {
+      this.applyInfoOperation(op as InfoOperation)
+    } else {
+      this.applyItemsOperation(op as ItemsOperation)
+    }
+  }
+
+  applyInfoOperation(op: InfoOperation) {
+    let actor: Actor
+    if (op.type === OperationType.SetSellerInfo) {
+      actor = Actor.Seller;
+    } else if (op.type === OperationType.SetBuyerInfo) {
+      actor = Actor.Buyer;
+    } else {
+      throw new Error(`Unknown info operation type ${op.type}`)
+    }
+    if (op.version === this.actorInfo[actor].version) {
+      throw new Error('Conflict! Same version number used twice');
+    }
+    if (op.version < this.actorInfo[actor].version) {
+      return; // old news, ignore
+    }
+    console.log(`Setting ${(actor === Actor.Buyer ? 'buyer' : 'seller')} info version ${op.version}:`, op.info);
+    this.actorInfo[actor] = { info: op.info, version: op.version };
+  }
+
+  applyItemsOperation(op: ItemsOperation) {
+    if (!this.items[op.productCode]) {
+      this.items[op.productCode] = {
+        ask: 0,
+        stock: 0,
+        unitPrice: 0
+      }
+    }
+    switch (op.type) {
+      case OperationType.AddItemQty:
+        console.log(`Adding ${op.amount} ${op.productCode} ask`);
+        this.items[op.productCode].ask += op.amount;
+        break
+      case OperationType.AddProductStock:
+        console.log(`Adding ${op.amount} ${op.productCode} stock`);
+        this.items[op.productCode].stock += op.amount;
+        break
+      case OperationType.AddProductUnitPrice:
+        console.log(`Adding ${op.amount} ${op.productCode} unit price`);
+        this.items[op.productCode].unitPrice += op.amount;
+        break
+      default:
+        throw new Error(`Unknown items operation type ${op.type}`);
+    }
+  }
+
+  allowed (op: ItemsOperation | InfoOperation, actor: Actor): boolean {
+    return (OperationsAllowed[actor].indexOf(op.type) !== -1);
+  }
+
+  processOperation(op: ItemsOperation | InfoOperation, actor: Actor): void {
+    if (this.allowed(op, actor)) {
+      console.log(`[ALLOW ${actor}]`, op);
+      return this.applyOperation(op);
+    }
+    console.log(`[DENY ${actor}]`, op);
+  }
+
+  finalize() {
+    const items = [];
+    let total = 0;
+    Object.keys(this.items).forEach(productCode => {
+      const qty = Math.min(this.items[productCode].ask, this.items[productCode].stock);
+      const unitPrice = this.items[productCode].unitPrice;
+      const itemTotal = qty * unitPrice;
+      if (qty > 0) {
+        items.push({ productCode, qty, unitPrice, itemTotal });
+        total += itemTotal;
+      }
+    });
+
+    return {
+      invoiceId: this.invoiceId,
+      seller: this.actorInfo[Actor.Seller].info,
+      buyer: this.actorInfo[Actor.Buyer].info,
+      items,
+      total
+    }
+  }
+}
+
+const draftInvoice = new DraftInvoice('0001-03', { name: 'George' }, { name: 'Michiel' });
+draftInvoice.processOperation({ type: OperationType.AddItemQty, productCode: 'beans', amount: 520 } as ItemsOperation, Actor.Buyer);
+draftInvoice.processOperation({ type: OperationType.AddProductUnitPrice, productCode: 'beans', amount: 0.05 }, Actor.Seller);
+draftInvoice.processOperation({ type: OperationType.AddProductStock, productCode: 'beans', amount: 1000 }, Actor.Seller);
+draftInvoice.processOperation({ type: OperationType.SetSellerInfo, info: { name: 'Mr. Svarovsky' }, version: 1 }, Actor.Seller);
+console.log(draftInvoice.finalize());
