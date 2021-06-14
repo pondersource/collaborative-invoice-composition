@@ -27,12 +27,26 @@ class ItemsOperation {
   type: OperationType
   productCode: string
   amount: number
+  constructor (options: { type: OperationType,
+    productCode: string,
+    amount: number}) {
+      this.type = options.type;
+      this.productCode = options.productCode;
+      this.amount = options.amount;
+    }
 }
 
 class InfoOperation {
   type: OperationType
   version: number
   info: any
+  constructor(options: { type: OperationType,
+  version: number,
+  info: any}) {
+    this.type = options.type;
+    this.version = options.version;
+    this.info = options.version;
+  }
 }
 
 class DraftInvoice {
@@ -60,15 +74,9 @@ class DraftInvoice {
     this.items = {};
     console.log(`Draft invoice ${invoiceId} created, seller and buyer:`, sellerInfo, buyerInfo);
   }
-
-  isInfoOperation(op: ItemsOperation | InfoOperation): boolean {
-    // FIXME: why doesn't this work:
-    // return op instanceof ItemsOperation;
-    return ([OperationType.SetBuyerInfo, OperationType.SetSellerInfo].indexOf(op.type) !== -1);
-  }
   
   applyOperation (op: ItemsOperation | InfoOperation): void {
-    if (this.isInfoOperation(op)) {
+    if (op instanceof InfoOperation) {
       this.applyInfoOperation(op as InfoOperation)
     } else {
       this.applyItemsOperation(op as ItemsOperation)
@@ -156,8 +164,8 @@ class DraftInvoice {
 }
 
 const draftInvoice = new DraftInvoice('0001-03', { name: 'George' }, { name: 'Michiel' });
-draftInvoice.processOperation({ type: OperationType.AddItemQty, productCode: 'beans', amount: 520 } as ItemsOperation, Actor.Buyer);
-draftInvoice.processOperation({ type: OperationType.AddProductUnitPrice, productCode: 'beans', amount: 0.05 }, Actor.Seller);
-draftInvoice.processOperation({ type: OperationType.AddProductStock, productCode: 'beans', amount: 1000 }, Actor.Seller);
-draftInvoice.processOperation({ type: OperationType.SetSellerInfo, info: { name: 'Mr. Svarovsky' }, version: 1 }, Actor.Seller);
+draftInvoice.processOperation(new ItemsOperation({ type: OperationType.AddItemQty, productCode: 'beans', amount: 520 }), Actor.Buyer);
+draftInvoice.processOperation(new ItemsOperation({ type: OperationType.AddProductUnitPrice, productCode: 'beans', amount: 0.05 }), Actor.Seller);
+draftInvoice.processOperation(new ItemsOperation({ type: OperationType.AddProductStock, productCode: 'beans', amount: 1000 }), Actor.Seller);
+draftInvoice.processOperation(new InfoOperation({ type: OperationType.SetSellerInfo, info: { name: 'Mr. Svarovsky' }, version: 1 }), Actor.Seller);
 console.log(draftInvoice.finalize());
