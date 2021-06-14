@@ -47,12 +47,11 @@ class InfoOperation extends Operation {
   version: number
   info: any
   constructor(options: { type: OperationType,
-  version: number,
   info: any}) {
     super();
     this.type = options.type;
-    this.version = options.version;
-    this.info = options.version;
+    this.version = new Date().getTime();
+    this.info = options.info;
   }
 }
 
@@ -74,6 +73,9 @@ class DraftInvoice {
   operationsApplied: {
     [operationId: string]: any
   }
+  lastOperationApplied: {
+    [operationType: string]: string
+  }
   copyHolder: Actor
   device: string
   constructor(invoiceId: string, sellerInfo: any, buyerInfo: any, copyHolder: Actor, device: string) {
@@ -84,21 +86,19 @@ class DraftInvoice {
     }
     this.items = {};
     this.operationsApplied = {};
+    this.lastOperationApplied = {};
     this.copyHolder = copyHolder;
     this.device = device;
     console.log(`Draft invoice ${invoiceId} created, seller and buyer:`, sellerInfo, buyerInfo);
   }
 
-  action(op: ItemsOperation | InfoOperation) {
-    this.actionLocal(op)
-    setTimeout(() => {
-      actionBroadcast(op, this.copyHolder);
-    }, 500);
-  }
-  actionLocal(op: Operation) {
+  action(op: Operation) {
     if (this.allowed(op, this.copyHolder)) {
       console.log(`[LOCAL ACCEPT ${this.copyHolder}${this.device}]`, op);
-      return this.applyOperation(op);
+      setTimeout(() => {
+        actionBroadcast(op, this.copyHolder);
+      }, 500);
+        return this.applyOperation(op);
     }
     console.log(`[LOCAL DENY ${this.copyHolder}${this.device}]`, op);
   }
@@ -122,6 +122,7 @@ class DraftInvoice {
       this.applyItemsOperation(op as ItemsOperation)
     }
     this.operationsApplied[op.operationId] = true;
+    this.lastOperationApplied[op.type] = op.operationId;
   }
 
   applyInfoOperation(op: InfoOperation) {
@@ -134,7 +135,13 @@ class DraftInvoice {
       console.error(`Unknown info operation type ${op.type}`)
     }
     if (op.version === this.actorInfo[actor].version) {
-      console.error('Conflict! Same version number used twice');
+      // desktop and mobile edited the actor info during the same millisecond
+      // highest operation id wins
+      if (op.operationId < this.lastOperationApplied[op.type]) {
+        return; // old news, ignore
+      } else if (op.operationId === this.lastOperationApplied[op.type]) {
+        throw new Error('FATAL: Hash collision!');
+      }
     }
     if (op.version < this.actorInfo[actor].version) {
       return; // old news, ignore
@@ -214,7 +221,9 @@ function actionBroadcast(op: Operation, actor: Actor) {
 draftInvoices.buyerOnDesktop.action(new ItemsOperation({ type: OperationType.AddItemQty, productCode: 'beans', amount: 520 }));
 draftInvoices.sellerOnMobile.action(new ItemsOperation({ type: OperationType.AddProductUnitPrice, productCode: 'beans', amount: 0.05 }));
 draftInvoices.sellerOnDesktop.action(new ItemsOperation({ type: OperationType.AddProductStock, productCode: 'beans', amount: 1000 }));
-draftInvoices.sellerOnMobile.action(new InfoOperation({ type: OperationType.SetSellerInfo, info: { name: 'Mr. Svarovsky' }, version: 1 }));
+draftInvoices.sellerOnMobile.action(new InfoOperation({ type: OperationType.SetSellerInfo, info: { name: 'Mr. Svarovsky Mobile' } }));
+draftInvoices.sellerOnDesktop.action(new InfoOperation({ type: OperationType.SetSellerInfo, info: { name: 'Mr. Svarovsky Desktop' } }));
+draftInvoices.buyerOnMobile.action(new InfoOperation({ type: OperationType.SetSellerInfo, info: { name: 'Mr. Svarovsky Buyer' } }));
 
 // end results:
 setTimeout(() => {
