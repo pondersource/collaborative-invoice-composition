@@ -23,26 +23,35 @@ const OperationsAllowed = {
   ]
 }
 
-class ItemsOperation {
+class Operation {
+  operationId: string
+  constructor() {
+    this.operationId = Math.random().toString(16).substring(2);
+  }
+}
+class ItemsOperation extends Operation {
+  operationId: string
   type: OperationType
   productCode: string
   amount: number
   constructor (options: { type: OperationType,
     productCode: string,
     amount: number}) {
+      super();
       this.type = options.type;
       this.productCode = options.productCode;
       this.amount = options.amount;
     }
 }
 
-class InfoOperation {
+class InfoOperation extends Operation {
   type: OperationType
   version: number
   info: any
   constructor(options: { type: OperationType,
   version: number,
   info: any}) {
+    super();
     this.type = options.type;
     this.version = options.version;
     this.info = options.version;
@@ -64,7 +73,9 @@ class DraftInvoice {
       unitPrice: number
     }
   }
-
+  operationsApplied: {
+    [operationId: string]: any
+  }
   constructor(invoiceId: string, sellerInfo: any, buyerInfo: any) {
     this.invoiceId = invoiceId;
     this.actorInfo = {
@@ -72,15 +83,21 @@ class DraftInvoice {
       [Actor.Buyer]: { info: buyerInfo, version: 0 }
     }
     this.items = {};
+    this.operationsApplied = {};
     console.log(`Draft invoice ${invoiceId} created, seller and buyer:`, sellerInfo, buyerInfo);
   }
   
-  applyOperation (op: ItemsOperation | InfoOperation): void {
+  applyOperation (op: Operation): void {
+    if (this.operationsApplied[op.operationId]) {
+      console.log('Already applied that operation', op.operationId);
+      return
+    }
     if (op instanceof InfoOperation) {
       this.applyInfoOperation(op as InfoOperation)
     } else {
       this.applyItemsOperation(op as ItemsOperation)
     }
+    this.operationsApplied[op.operationId] = true;
   }
 
   applyInfoOperation(op: InfoOperation) {
