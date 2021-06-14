@@ -9,153 +9,193 @@ npm install
 
 Expected output:
 ```sh
+$ ./node_modules/.bin/ts-node-dev index.ts 
+[INFO] 16:05:52 ts-node-dev ver. 1.1.6 (using ts-node ver. 9.1.1, typescript ver. 4.3.2)
 Draft invoice 0001-03 created, seller and buyer: { name: 'George' } { name: 'Michiel' }
 Draft invoice 0001-03 created, seller and buyer: { name: 'George' } { name: 'Michiel' }
 Draft invoice 0001-03 created, seller and buyer: { name: 'George' } { name: 'Michiel' }
 Draft invoice 0001-03 created, seller and buyer: { name: 'George' } { name: 'Michiel' }
 [LOCAL ACCEPT BuyerOnDesktop] ItemsOperation {
-  operationId: '16e65884414d7',
-  type: 'AddItemQty',
+  operationId: '5231229a1fc2b',
+  type: 'SetItemQty',
   productCode: 'beans',
   amount: 520
 }
-Adding 520 beans ask
+Setting 520 beans ask
 [LOCAL ACCEPT SellerOnMobile] ItemsOperation {
-  operationId: 'aa2866384ff07',
-  type: 'AddProductUnitPrice',
+  operationId: 'ba7826be8533',
+  type: 'SetProductUnitPrice',
   productCode: 'beans',
   amount: 0.05
 }
-Adding 0.05 beans unit price
+Setting 0.05 beans unit price
 [LOCAL ACCEPT SellerOnDesktop] ItemsOperation {
-  operationId: 'd2058edd97dc5',
-  type: 'AddProductStock',
+  operationId: '2f22878ed7ef4',
+  type: 'SetProductStock',
   productCode: 'beans',
   amount: 1000
 }
-Adding 1000 beans stock
+Setting 1000 beans stock
 [LOCAL ACCEPT SellerOnMobile] InfoOperation {
-  operationId: '0ba302e71dac4',
+  operationId: 'eb8870fda536d',
   type: 'SetSellerInfo',
-  version: 1,
-  info: 1
+  version: 1623679553837,
+  info: { name: 'Mr. Svarovsky Mobile' }
 }
-Setting seller info version 1: 1
+Setting seller info version 1623679553837: { name: 'Mr. Svarovsky Mobile' }
+[LOCAL ACCEPT SellerOnDesktop] InfoOperation {
+  operationId: 'bbc470feddcbc',
+  type: 'SetSellerInfo',
+  version: 1623679553837,
+  info: { name: 'Mr. Svarovsky Desktop' }
+}
+Setting seller info version 1623679553837: { name: 'Mr. Svarovsky Desktop' }
+[LOCAL DENY BuyerOnMobile] InfoOperation {
+  operationId: '6d751a7a7264e',
+  type: 'SetSellerInfo',
+  version: 1623679553837,
+  info: { name: 'Mr. Svarovsky Buyer' }
+}
 [INCOMING ACCEPT BuyerOnDesktop] ItemsOperation {
-  operationId: '16e65884414d7',
-  type: 'AddItemQty',
+  operationId: '5231229a1fc2b',
+  type: 'SetItemQty',
   productCode: 'beans',
   amount: 520
 } Buyer
-Already applied that operation 16e65884414d7
+Already applied that operation 5231229a1fc2b
 [INCOMING ACCEPT BuyerOnMobile] ItemsOperation {
-  operationId: '16e65884414d7',
-  type: 'AddItemQty',
+  operationId: '5231229a1fc2b',
+  type: 'SetItemQty',
   productCode: 'beans',
   amount: 520
 } Buyer
-Adding 520 beans ask
+Setting 520 beans ask
 [INCOMING ACCEPT SellerOnDesktop] ItemsOperation {
-  operationId: '16e65884414d7',
-  type: 'AddItemQty',
+  operationId: '5231229a1fc2b',
+  type: 'SetItemQty',
   productCode: 'beans',
   amount: 520
 } Buyer
-Adding 520 beans ask
+Setting 520 beans ask
 [INCOMING ACCEPT SellerOnMobile] ItemsOperation {
-  operationId: '16e65884414d7',
-  type: 'AddItemQty',
+  operationId: '5231229a1fc2b',
+  type: 'SetItemQty',
   productCode: 'beans',
   amount: 520
 } Buyer
-Adding 520 beans ask
+Setting 520 beans ask
 [INCOMING ACCEPT BuyerOnDesktop] ItemsOperation {
-  operationId: 'aa2866384ff07',
-  type: 'AddProductUnitPrice',
+  operationId: 'ba7826be8533',
+  type: 'SetProductUnitPrice',
   productCode: 'beans',
   amount: 0.05
 } Seller
-Adding 0.05 beans unit price
+Setting 0.05 beans unit price
 [INCOMING ACCEPT BuyerOnMobile] ItemsOperation {
-  operationId: 'aa2866384ff07',
-  type: 'AddProductUnitPrice',
+  operationId: 'ba7826be8533',
+  type: 'SetProductUnitPrice',
   productCode: 'beans',
   amount: 0.05
 } Seller
-Adding 0.05 beans unit price
+Setting 0.05 beans unit price
 [INCOMING ACCEPT SellerOnDesktop] ItemsOperation {
-  operationId: 'aa2866384ff07',
-  type: 'AddProductUnitPrice',
+  operationId: 'ba7826be8533',
+  type: 'SetProductUnitPrice',
   productCode: 'beans',
   amount: 0.05
 } Seller
-Adding 0.05 beans unit price
+Setting 0.05 beans unit price
 [INCOMING ACCEPT SellerOnMobile] ItemsOperation {
-  operationId: 'aa2866384ff07',
-  type: 'AddProductUnitPrice',
+  operationId: 'ba7826be8533',
+  type: 'SetProductUnitPrice',
   productCode: 'beans',
   amount: 0.05
 } Seller
-Already applied that operation aa2866384ff07
+Already applied that operation ba7826be8533
 [INCOMING ACCEPT BuyerOnDesktop] ItemsOperation {
-  operationId: 'd2058edd97dc5',
-  type: 'AddProductStock',
+  operationId: '2f22878ed7ef4',
+  type: 'SetProductStock',
   productCode: 'beans',
   amount: 1000
 } Seller
-Adding 1000 beans stock
+Setting 1000 beans stock
 [INCOMING ACCEPT BuyerOnMobile] ItemsOperation {
-  operationId: 'd2058edd97dc5',
-  type: 'AddProductStock',
+  operationId: '2f22878ed7ef4',
+  type: 'SetProductStock',
   productCode: 'beans',
   amount: 1000
 } Seller
-Adding 1000 beans stock
+Setting 1000 beans stock
 [INCOMING ACCEPT SellerOnDesktop] ItemsOperation {
-  operationId: 'd2058edd97dc5',
-  type: 'AddProductStock',
+  operationId: '2f22878ed7ef4',
+  type: 'SetProductStock',
   productCode: 'beans',
   amount: 1000
 } Seller
-Already applied that operation d2058edd97dc5
+Already applied that operation 2f22878ed7ef4
 [INCOMING ACCEPT SellerOnMobile] ItemsOperation {
-  operationId: 'd2058edd97dc5',
-  type: 'AddProductStock',
+  operationId: '2f22878ed7ef4',
+  type: 'SetProductStock',
   productCode: 'beans',
   amount: 1000
 } Seller
-Adding 1000 beans stock
+Setting 1000 beans stock
 [INCOMING ACCEPT BuyerOnDesktop] InfoOperation {
-  operationId: '0ba302e71dac4',
+  operationId: 'eb8870fda536d',
   type: 'SetSellerInfo',
-  version: 1,
-  info: 1
+  version: 1623679553837,
+  info: { name: 'Mr. Svarovsky Mobile' }
 } Seller
-Setting seller info version 1: 1
+Setting seller info version 1623679553837: { name: 'Mr. Svarovsky Mobile' }
 [INCOMING ACCEPT BuyerOnMobile] InfoOperation {
-  operationId: '0ba302e71dac4',
+  operationId: 'eb8870fda536d',
   type: 'SetSellerInfo',
-  version: 1,
-  info: 1
+  version: 1623679553837,
+  info: { name: 'Mr. Svarovsky Mobile' }
 } Seller
-Setting seller info version 1: 1
+Setting seller info version 1623679553837: { name: 'Mr. Svarovsky Mobile' }
 [INCOMING ACCEPT SellerOnDesktop] InfoOperation {
-  operationId: '0ba302e71dac4',
+  operationId: 'eb8870fda536d',
   type: 'SetSellerInfo',
-  version: 1,
-  info: 1
+  version: 1623679553837,
+  info: { name: 'Mr. Svarovsky Mobile' }
 } Seller
-Setting seller info version 1: 1
+Setting seller info version 1623679553837: { name: 'Mr. Svarovsky Mobile' }
 [INCOMING ACCEPT SellerOnMobile] InfoOperation {
-  operationId: '0ba302e71dac4',
+  operationId: 'eb8870fda536d',
   type: 'SetSellerInfo',
-  version: 1,
-  info: 1
+  version: 1623679553837,
+  info: { name: 'Mr. Svarovsky Mobile' }
 } Seller
-Already applied that operation 0ba302e71dac4
+Already applied that operation eb8870fda536d
+[INCOMING ACCEPT BuyerOnDesktop] InfoOperation {
+  operationId: 'bbc470feddcbc',
+  type: 'SetSellerInfo',
+  version: 1623679553837,
+  info: { name: 'Mr. Svarovsky Desktop' }
+} Seller
+[INCOMING ACCEPT BuyerOnMobile] InfoOperation {
+  operationId: 'bbc470feddcbc',
+  type: 'SetSellerInfo',
+  version: 1623679553837,
+  info: { name: 'Mr. Svarovsky Desktop' }
+} Seller
+[INCOMING ACCEPT SellerOnDesktop] InfoOperation {
+  operationId: 'bbc470feddcbc',
+  type: 'SetSellerInfo',
+  version: 1623679553837,
+  info: { name: 'Mr. Svarovsky Desktop' }
+} Seller
+Already applied that operation bbc470feddcbc
+[INCOMING ACCEPT SellerOnMobile] InfoOperation {
+  operationId: 'bbc470feddcbc',
+  type: 'SetSellerInfo',
+  version: 1623679553837,
+  info: { name: 'Mr. Svarovsky Desktop' }
+} Seller
 buyerOnDesktop {
   invoiceId: '0001-03',
-  seller: 1,
+  seller: { name: 'Mr. Svarovsky Mobile' },
   buyer: { name: 'Michiel' },
   items: [
     { productCode: 'beans', qty: 520, unitPrice: 0.05, itemTotal: 26 }
@@ -164,7 +204,7 @@ buyerOnDesktop {
 }
 buyerOnMobile {
   invoiceId: '0001-03',
-  seller: 1,
+  seller: { name: 'Mr. Svarovsky Mobile' },
   buyer: { name: 'Michiel' },
   items: [
     { productCode: 'beans', qty: 520, unitPrice: 0.05, itemTotal: 26 }
@@ -173,7 +213,7 @@ buyerOnMobile {
 }
 sellerOnDesktop {
   invoiceId: '0001-03',
-  seller: 1,
+  seller: { name: 'Mr. Svarovsky Mobile' },
   buyer: { name: 'Michiel' },
   items: [
     { productCode: 'beans', qty: 520, unitPrice: 0.05, itemTotal: 26 }
@@ -182,7 +222,7 @@ sellerOnDesktop {
 }
 sellerOnMobile {
   invoiceId: '0001-03',
-  seller: 1,
+  seller: { name: 'Mr. Svarovsky Mobile' },
   buyer: { name: 'Michiel' },
   items: [
     { productCode: 'beans', qty: 520, unitPrice: 0.05, itemTotal: 26 }
