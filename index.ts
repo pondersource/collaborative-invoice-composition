@@ -25,13 +25,12 @@ const OperationsAllowed = {
 
 class Operation {
   operationId: string
+  type: OperationType
   constructor() {
     this.operationId = Math.random().toString(16).substring(2);
   }
 }
 class ItemsOperation extends Operation {
-  operationId: string
-  type: OperationType
   productCode: string
   amount: number
   constructor (options: { type: OperationType,
@@ -45,7 +44,6 @@ class ItemsOperation extends Operation {
 }
 
 class InfoOperation extends Operation {
-  type: OperationType
   version: number
   info: any
   constructor(options: { type: OperationType,
@@ -76,7 +74,9 @@ class DraftInvoice {
   operationsApplied: {
     [operationId: string]: any
   }
-  constructor(invoiceId: string, sellerInfo: any, buyerInfo: any) {
+  copyHolder: Actor
+  device: string
+  constructor(invoiceId: string, sellerInfo: any, buyerInfo: any, copyHolder: Actor, device: string) {
     this.invoiceId = invoiceId;
     this.actorInfo = {
       [Actor.Seller]: { info: sellerInfo, version: 0 },
@@ -84,7 +84,31 @@ class DraftInvoice {
     }
     this.items = {};
     this.operationsApplied = {};
+    this.copyHolder = copyHolder;
+    this.device = device;
     console.log(`Draft invoice ${invoiceId} created, seller and buyer:`, sellerInfo, buyerInfo);
+  }
+
+  action(op: ItemsOperation | InfoOperation) {
+    this.actionLocal(op)
+    setTimeout(() => {
+      actionBroadcast(op, this.copyHolder);
+    }, 500);
+  }
+  actionLocal(op: Operation) {
+    if (this.allowed(op, this.copyHolder)) {
+      console.log(`[LOCAL ACCEPT ${this.copyHolder}${this.device}]`, op);
+      return this.applyOperation(op);
+    }
+    console.log(`[LOCAL DENY ${this.copyHolder}${this.device}]`, op);
+  }
+  
+  actionRemote(op: Operation, actor: Actor) {
+    if (this.allowed(op, actor)) {
+      console.log(`[INCOMING ACCEPT ${this.copyHolder}${this.device}]`, op, actor);
+      return this.applyOperation(op);
+    }
+    console.log(`[CATASTROPHY ${this.copyHolder}${this.device}]`, op, actor);
   }
   
   applyOperation (op: Operation): void {
@@ -145,16 +169,8 @@ class DraftInvoice {
     }
   }
 
-  allowed (op: ItemsOperation | InfoOperation, actor: Actor): boolean {
+  allowed (op: Operation, actor: Actor): boolean {
     return (OperationsAllowed[actor].indexOf(op.type) !== -1);
-  }
-
-  processOperation(op: ItemsOperation | InfoOperation, actor: Actor): void {
-    if (this.allowed(op, actor)) {
-      console.log(`[ALLOW ${actor}]`, op);
-      return this.applyOperation(op);
-    }
-    console.log(`[DENY ${actor}]`, op);
   }
 
   finalize() {
@@ -181,26 +197,26 @@ class DraftInvoice {
 }
 
 const draftInvoices = {
-  buyerOnDesktop: new DraftInvoice('0001-03', { name: 'George' }, { name: 'Michiel' }),
-  buyerOnMobile: new DraftInvoice('0001-03', { name: 'George' }, { name: 'Michiel' }),
-  sellerOnDesktop: new DraftInvoice('0001-03', { name: 'George' }, { name: 'Michiel' }),
-  sellerOnMobile: new DraftInvoice('0001-03', { name: 'George' }, { name: 'Michiel' })
+  buyerOnDesktop: new DraftInvoice('0001-03', { name: 'George' }, { name: 'Michiel' }, Actor.Buyer, 'OnDesktop'),
+  buyerOnMobile: new DraftInvoice('0001-03', { name: 'George' }, { name: 'Michiel' }, Actor.Buyer, 'OnMobile'),
+  sellerOnDesktop: new DraftInvoice('0001-03', { name: 'George' }, { name: 'Michiel' }, Actor.Seller, 'OnDesktop'),
+  sellerOnMobile: new DraftInvoice('0001-03', { name: 'George' }, { name: 'Michiel' }, Actor.Seller, 'OnMobile')
 };
 
-function action(actor: Actor, device: 'OnDesktop' | 'OnMobile', op: ItemsOperation | InfoOperation) {
-  draftInvoices[`${actor.toLowerCase()}${device}`].processOperation(op, actor);
-  setTimeout(() => {
-    draftInvoices.buyerOnDesktop.processOperation(op, actor);
-    draftInvoices.buyerOnMobile.processOperation(op, actor);
-    draftInvoices.sellerOnDesktop.processOperation(op, actor);
-    draftInvoices.sellerOnMobile.processOperation(op, actor);
-  }, 500);
+function actionBroadcast(op: Operation, actor: Actor) {
+  draftInvoices.buyerOnDesktop.actionRemote(op, actor);
+  draftInvoices.buyerOnMobile.actionRemote(op, actor);
+  draftInvoices.sellerOnDesktop.actionRemote(op, actor);
+  draftInvoices.sellerOnMobile.actionRemote(op, actor);
 }
 
-action(Actor.Buyer, 'OnDesktop', new ItemsOperation({ type: OperationType.AddItemQty, productCode: 'beans', amount: 520 }));
-action(Actor.Seller, 'OnMobile', new ItemsOperation({ type: OperationType.AddProductUnitPrice, productCode: 'beans', amount: 0.05 }));
-action(Actor.Seller, 'OnDesktop', new ItemsOperation({ type: OperationType.AddProductStock, productCode: 'beans', amount: 1000 }));
-action(Actor.Seller, 'OnMobile', new InfoOperation({ type: OperationType.SetSellerInfo, info: { name: 'Mr. Svarovsky' }, version: 1 }));
+// actions:
+draftInvoices.buyerOnDesktop.action(new ItemsOperation({ type: OperationType.AddItemQty, productCode: 'beans', amount: 520 }));
+draftInvoices.sellerOnMobile.action(new ItemsOperation({ type: OperationType.AddProductUnitPrice, productCode: 'beans', amount: 0.05 }));
+draftInvoices.sellerOnDesktop.action(new ItemsOperation({ type: OperationType.AddProductStock, productCode: 'beans', amount: 1000 }));
+draftInvoices.sellerOnMobile.action(new InfoOperation({ type: OperationType.SetSellerInfo, info: { name: 'Mr. Svarovsky' }, version: 1 }));
+
+// end results:
 setTimeout(() => {
   Object.keys(draftInvoices).map(x => console.log(x, draftInvoices[x].finalize()));
 }, 600);
