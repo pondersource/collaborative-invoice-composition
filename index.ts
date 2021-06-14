@@ -90,10 +90,10 @@ class DraftInvoice {
     } else if (op.type === OperationType.SetBuyerInfo) {
       actor = Actor.Buyer;
     } else {
-      throw new Error(`Unknown info operation type ${op.type}`)
+      console.error(`Unknown info operation type ${op.type}`)
     }
     if (op.version === this.actorInfo[actor].version) {
-      throw new Error('Conflict! Same version number used twice');
+      console.error('Conflict! Same version number used twice');
     }
     if (op.version < this.actorInfo[actor].version) {
       return; // old news, ignore
@@ -124,7 +124,7 @@ class DraftInvoice {
         this.items[op.productCode].unitPrice += op.amount;
         break
       default:
-        throw new Error(`Unknown items operation type ${op.type}`);
+        console.error(`Unknown items operation type ${op.type}`);
     }
   }
 
@@ -163,9 +163,27 @@ class DraftInvoice {
   }
 }
 
-const draftInvoice = new DraftInvoice('0001-03', { name: 'George' }, { name: 'Michiel' });
-draftInvoice.processOperation(new ItemsOperation({ type: OperationType.AddItemQty, productCode: 'beans', amount: 520 }), Actor.Buyer);
-draftInvoice.processOperation(new ItemsOperation({ type: OperationType.AddProductUnitPrice, productCode: 'beans', amount: 0.05 }), Actor.Seller);
-draftInvoice.processOperation(new ItemsOperation({ type: OperationType.AddProductStock, productCode: 'beans', amount: 1000 }), Actor.Seller);
-draftInvoice.processOperation(new InfoOperation({ type: OperationType.SetSellerInfo, info: { name: 'Mr. Svarovsky' }, version: 1 }), Actor.Seller);
-console.log(draftInvoice.finalize());
+const draftInvoices = {
+  buyerOnDesktop: new DraftInvoice('0001-03', { name: 'George' }, { name: 'Michiel' }),
+  buyerOnMobile: new DraftInvoice('0001-03', { name: 'George' }, { name: 'Michiel' }),
+  sellerOnDesktop: new DraftInvoice('0001-03', { name: 'George' }, { name: 'Michiel' }),
+  sellerOnMobile: new DraftInvoice('0001-03', { name: 'George' }, { name: 'Michiel' })
+};
+
+function action(actor: Actor, device: 'OnDesktop' | 'OnMobile', op: ItemsOperation | InfoOperation) {
+  draftInvoices[`${actor.toLowerCase()}${device}`].processOperation(op, actor);
+  setTimeout(() => {
+    draftInvoices.buyerOnDesktop.processOperation(op, actor);
+    draftInvoices.buyerOnMobile.processOperation(op, actor);
+    draftInvoices.sellerOnDesktop.processOperation(op, actor);
+    draftInvoices.sellerOnMobile.processOperation(op, actor);
+  }, 500);
+}
+
+action(Actor.Buyer, 'OnDesktop', new ItemsOperation({ type: OperationType.AddItemQty, productCode: 'beans', amount: 520 }));
+action(Actor.Seller, 'OnMobile', new ItemsOperation({ type: OperationType.AddProductUnitPrice, productCode: 'beans', amount: 0.05 }));
+action(Actor.Seller, 'OnDesktop', new ItemsOperation({ type: OperationType.AddProductStock, productCode: 'beans', amount: 1000 }));
+action(Actor.Seller, 'OnMobile', new InfoOperation({ type: OperationType.SetSellerInfo, info: { name: 'Mr. Svarovsky' }, version: 1 }));
+setTimeout(() => {
+  Object.keys(draftInvoices).map(x => console.log(x, draftInvoices[x].finalize()));
+}, 600);
