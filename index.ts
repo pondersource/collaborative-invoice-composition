@@ -1,7 +1,7 @@
 enum OperationType {
-  AddItemQty = 'AddItemQty',
-  AddProductStock = 'AddProductStock',
-  AddProductUnitPrice = 'AddProductUnitPrice',
+  SetItemQty = 'SetItemQty',
+  SetProductStock = 'SetProductStock',
+  SetProductUnitPrice = 'SetProductUnitPrice',
   SetSellerInfo = 'SetSellerInfo',
   SetBuyerInfo = 'SetBuyerInfo'
 }
@@ -13,12 +13,12 @@ enum Actor {
 
 const OperationsAllowed = {
   [Actor.Seller]: [
-    OperationType.AddProductStock,
-    OperationType.AddProductUnitPrice,
+    OperationType.SetProductStock,
+    OperationType.SetProductUnitPrice,
     OperationType.SetSellerInfo
   ],
   [Actor.Buyer]: [
-    OperationType.AddItemQty,
+    OperationType.SetItemQty,
     OperationType.SetBuyerInfo
   ]
 }
@@ -159,17 +159,17 @@ class DraftInvoice {
       }
     }
     switch (op.type) {
-      case OperationType.AddItemQty:
-        console.log(`Adding ${op.amount} ${op.productCode} ask`);
-        this.items[op.productCode].ask += op.amount;
+      case OperationType.SetItemQty:
+        console.log(`Setting ${op.amount} ${op.productCode} ask`);
+        this.items[op.productCode].ask = op.amount;
         break
-      case OperationType.AddProductStock:
-        console.log(`Adding ${op.amount} ${op.productCode} stock`);
-        this.items[op.productCode].stock += op.amount;
+      case OperationType.SetProductStock:
+        console.log(`Setting ${op.amount} ${op.productCode} stock`);
+        this.items[op.productCode].stock = op.amount;
         break
-      case OperationType.AddProductUnitPrice:
-        console.log(`Adding ${op.amount} ${op.productCode} unit price`);
-        this.items[op.productCode].unitPrice += op.amount;
+      case OperationType.SetProductUnitPrice:
+        console.log(`Setting ${op.amount} ${op.productCode} unit price`);
+        this.items[op.productCode].unitPrice = op.amount;
         break
       default:
         console.error(`Unknown items operation type ${op.type}`);
@@ -218,9 +218,9 @@ function actionBroadcast(op: Operation, actor: Actor) {
 }
 
 // actions:
-draftInvoices.buyerOnDesktop.action(new ItemsOperation({ type: OperationType.AddItemQty, productCode: 'beans', amount: 520 }));
-draftInvoices.sellerOnMobile.action(new ItemsOperation({ type: OperationType.AddProductUnitPrice, productCode: 'beans', amount: 0.05 }));
-draftInvoices.sellerOnDesktop.action(new ItemsOperation({ type: OperationType.AddProductStock, productCode: 'beans', amount: 1000 }));
+draftInvoices.buyerOnDesktop.action(new ItemsOperation({ type: OperationType.SetItemQty, productCode: 'beans', amount: 520 }));
+draftInvoices.sellerOnMobile.action(new ItemsOperation({ type: OperationType.SetProductUnitPrice, productCode: 'beans', amount: 0.05 }));
+draftInvoices.sellerOnDesktop.action(new ItemsOperation({ type: OperationType.SetProductStock, productCode: 'beans', amount: 1000 }));
 draftInvoices.sellerOnMobile.action(new InfoOperation({ type: OperationType.SetSellerInfo, info: { name: 'Mr. Svarovsky Mobile' } }));
 draftInvoices.sellerOnDesktop.action(new InfoOperation({ type: OperationType.SetSellerInfo, info: { name: 'Mr. Svarovsky Desktop' } }));
 draftInvoices.buyerOnMobile.action(new InfoOperation({ type: OperationType.SetSellerInfo, info: { name: 'Mr. Svarovsky Buyer' } }));
