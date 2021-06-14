@@ -6,8 +6,27 @@ The following shows how buyer and seller can collaboratively compose an invoice,
 npm install
 ./node_modules/.bin/ts-node-dev ./index.ts 
 ```
+## What it does
+There are four draft invoice copies:
+* buyer on desktop
+* buyer on mobile
+* seller on desktop
+* seller on mobile
 
-Expected output:
+The invoice is created with an invoice id and with initial buyer and seller info.
+Each device can apply an operation locally and broadcast it to the bus, so that 500ms later, it will be applied to all four copies. Randomly generated operation id's are used to give idempotency.
+
+The buyer can set buyer info and the seller can set seller info for the invoice.
+The way this is versioned is with a wall clock timestamp and a random operation id. Latest timestamp wins, highest operation id wins in case of a tie.
+
+The number of items asked for a given productId can only be edited by the buyer's devices.
+The number of items in stock and the unit price for a given productId can only be edited by the seller's devices.
+Item quantity, product stock, and product unit price, are all changed with a 'add' operation (for 'remove', specify a negative amount to 'add').
+
+If you add a pack of pencils on mobile, and also add a pack of pencils on desktop, eventually the order will contain 2 packs of pencils. This may not be desirable if it's the same forgetful person, but it's probably desirable in other situations. See https://github.com/pondersource/collaborative-invoice-composition/issues/6 for more discussion.
+
+
+## Expected output
 ```sh
 $ ./node_modules/.bin/ts-node-dev index.ts 
 [INFO] 16:05:52 ts-node-dev ver. 1.1.6 (using ts-node ver. 9.1.1, typescript ver. 4.3.2)
